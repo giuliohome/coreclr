@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
@@ -49,8 +50,45 @@ static class OpenClosedDelegateExtension
     }
 }
 
+
+public enum Test
+{
+    Foo,
+    Bar
+}
+
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+public class TestAttribute : Attribute
+{
+    public TestAttribute(Test[] valuesOne, Test[] valuesTwo)
+    {
+    }
+}
+
 class Program
 {
+    static void TestCtorAttr()
+    {
+        var type = typeof(Program);
+        var method = type.GetMethod("Main", BindingFlags.Static | BindingFlags.NonPublic);
+        var attributeEn = method.CustomAttributes.GetEnumerator();
+        attributeEn.MoveNext();
+        var attribute = attributeEn.Current.ConstructorArguments;
+        Assert.AreEqual(attribute.Count, 4);
+        Assert.AreEqual(attribute[0].ArgumentType, typeof(Test[]));
+        Assert.AreEqual((Test)(((ReadOnlyCollection<CustomAttributeTypedArgument>)attribute[0].Value)[0].Value), Test.Foo);
+        Assert.AreEqual(attribute[1].Value, null); 
+        // type Test[] also for null value!
+        Assert.AreEqual(attribute[1].ArgumentType, typeof(Test[]));
+        //Console.WriteLine("SOLUTION val {0} type {1}",attribute[1].Value,attribute[1].ArgumentType);
+        Assert.AreEqual(attribute[2].ArgumentType, typeof(Test[]));
+        Assert.AreEqual((Test)(((ReadOnlyCollection<CustomAttributeTypedArgument>)attribute[2].Value).Count), 0);
+        Assert.AreEqual(attribute[3].ArgumentType, typeof(Test[]));
+        Assert.AreEqual((Test)(((ReadOnlyCollection<CustomAttributeTypedArgument>)attribute[3].Value).Count), 3);
+        Assert.AreEqual((Test)(((ReadOnlyCollection<CustomAttributeTypedArgument>)attribute[3].Value)[2].Value), Test.Bar);
+        //Console.WriteLine("SOLUTION yet another test val {0} type {1}",((ReadOnlyCollection<CustomAttributeTypedArgument>)attribute[3].Value)[2].Value,attribute[3].ArgumentType);
+    }
+
     static void TestVirtualMethodCalls()
     {
          var o = new MyClass();
@@ -420,6 +458,7 @@ class Program
 
     static void RunAllTests()
     {
+        TestCtorAttr();
         TestVirtualMethodCalls();
         TestMovedVirtualMethods();
 
@@ -472,6 +511,7 @@ class Program
         GenericLdtokenFieldsTest();
     }
 
+    [Test(new[] { Test.Foo }, null)]
     static int Main()
     {
         // Code compiled by LLILC jit can't catch exceptions yet so the tests
