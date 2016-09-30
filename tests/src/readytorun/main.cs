@@ -60,7 +60,7 @@ public enum Test
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public class TestAttribute : Attribute
 {
-    public TestAttribute(Test[] valuesOne, Test[] valuesTwo)
+    public TestAttribute(Test[] valuesOne, Test[] valuesTwo, Test[] valuesThree, Test[] valuesFour)
     {
     }
 }
