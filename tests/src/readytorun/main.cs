@@ -73,20 +73,20 @@ class Program
         var method = type.GetMethod("Main", BindingFlags.Static | BindingFlags.NonPublic);
         var attributeEn = method.CustomAttributes.GetEnumerator();
         attributeEn.MoveNext();
-        var attribute = attributeEn.Current.ConstructorArguments;
-        Assert.AreEqual(attribute.Count, 4);
-        Assert.AreEqual(attribute[0].ArgumentType, typeof(Test[]));
-        Assert.AreEqual((Test)(((ReadOnlyCollection<CustomAttributeTypedArgument>)attribute[0].Value)[0].Value), Test.Foo);
-        Assert.AreEqual(attribute[1].Value, null); 
+        var argument = attributeEn.Current.ConstructorArguments;
+        Assert.AreEqual(argument.Count, 4);
+        Assert.AreEqual(argument[0].ArgumentType, typeof(Test[]));
+        Assert.AreEqual((Test)(((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[0].Value)[0].Value), Test.Foo);
+        Assert.AreEqual(argument[1].Value, null); 
         // type Test[] also for null value!
-        Assert.AreEqual(attribute[1].ArgumentType, typeof(Test[]));
-        //Console.WriteLine("SOLUTION val {0} type {1}",attribute[1].Value,attribute[1].ArgumentType);
-        Assert.AreEqual(attribute[2].ArgumentType, typeof(Test[]));
-        Assert.AreEqual((Test)(((ReadOnlyCollection<CustomAttributeTypedArgument>)attribute[2].Value).Count), 0);
-        Assert.AreEqual(attribute[3].ArgumentType, typeof(Test[]));
-        Assert.AreEqual((Test)(((ReadOnlyCollection<CustomAttributeTypedArgument>)attribute[3].Value).Count), 3);
-        Assert.AreEqual((Test)(((ReadOnlyCollection<CustomAttributeTypedArgument>)attribute[3].Value)[2].Value), Test.Bar);
-        //Console.WriteLine("SOLUTION yet another test val {0} type {1}",((ReadOnlyCollection<CustomAttributeTypedArgument>)attribute[3].Value)[2].Value,attribute[3].ArgumentType);
+        Assert.AreEqual(argument[1].ArgumentType, typeof(Test[]));
+        Console.WriteLine("SOLUTION val {0} type {1}",argument[1].Value,argument[1].ArgumentType);
+        Assert.AreEqual(argument[2].ArgumentType, typeof(Test[]));
+        Assert.AreEqual(((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[2].Value).Count, 0);
+        Assert.AreEqual(argument[3].ArgumentType, typeof(Test[]));
+        Assert.AreEqual(((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[3].Value).Count, 3);
+        Assert.AreEqual((Test)(((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[3].Value)[2].Value), Test.Bar);
+        Console.WriteLine("SOLUTION yet another test val {0} type {1}",(Test)((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[3].Value)[2].Value,argument[3].ArgumentType);
     }
 
     static void TestVirtualMethodCalls()
