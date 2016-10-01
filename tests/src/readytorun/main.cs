@@ -511,7 +511,7 @@ class Program
         GenericLdtokenFieldsTest();
     }
 
-    [Test(new[] { Test.Foo }, null)]
+    [Test(new[] { Test.Foo }, null, new Test[0], new[] { Test.Foo, Test.Foo, Test.Bar })]
     static int Main()
     {
         // Code compiled by LLILC jit can't catch exceptions yet so the tests
