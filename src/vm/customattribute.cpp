@@ -165,15 +165,21 @@ CustomAttributeManagedValues Attribute::GetManagedCaValue(CaValue* pCaVal)
         ULONG length = pCaVal->arr.length;
         BOOL bAllBlittableCa = arrayType != SERIALIZATION_TYPE_ENUM;
 
-        if (length != (ULONG)-1)
+        if (length == (ULONG)-1)
         {
-            gc.array = (CaValueArrayREF)AllocateValueSzArray(MscorlibBinder::GetClass(CLASS__CUSTOM_ATTRIBUTE_ENCODED_ARGUMENT), length);
-            CustomAttributeValue* pValues = gc.array->GetDirectPointerToNonObjectElements();
+            GCPROTECT_BEGIN(gc)
+            {   
+                if (arrayType == SERIALIZATION_TYPE_ENUM)
+                    gc.string = StringObject::NewString(pCaVal->type.szEnumName, pCaVal->type.cEnumName);                      
+            }
+            GCPROTECT_END();
+            return gc;
+        }
+        gc.array = (CaValueArrayREF)AllocateValueSzArray(MscorlibBinder::GetClass(CLASS__CUSTOM_ATTRIBUTE_ENCODED_ARGUMENT), length);
+        CustomAttributeValue* pValues = gc.array->GetDirectPointerToNonObjectElements();
 
         for (COUNT_T i = 0; i < length; i ++)
             Attribute::SetBlittableCaValue(&pValues[i], &pCaVal->arr[i], &bAllBlittableCa); 
-        }
-
 
         if (!bAllBlittableCa)
         {
@@ -182,7 +188,7 @@ CustomAttributeManagedValues Attribute::GetManagedCaValue(CaValue* pCaVal)
                 if (arrayType == SERIALIZATION_TYPE_ENUM)
                     gc.string = StringObject::NewString(pCaVal->type.szEnumName, pCaVal->type.cEnumName);                      
                 
-                if (length != (ULONG)-1) for (COUNT_T i = 0; i < length; i ++)
+                for (COUNT_T i = 0; i < length; i ++)
                 {
                     CustomAttributeManagedValues managedCaValue = Attribute::GetManagedCaValue(&pCaVal->arr[i]);
                     Attribute::SetManagedValue(
@@ -192,6 +198,7 @@ CustomAttributeManagedValues Attribute::GetManagedCaValue(CaValue* pCaVal)
             }
             GCPROTECT_END();
         }
+
     }
 
     return gc;
@@ -295,11 +302,13 @@ HRESULT Attribute::ParseCaValue(
         IfFailGo(ca.GetU4(&len));
         pCaArg->arr.length = len;
         pCaArg->arr.pSArray = NULL;
+        if (pCaArg->arr.length == (ULONG)-1)
+            break;
 
         IfNullGo(pCaArg->arr.pSArray = pCaValueArrayFactory->Create()); 
         elementType.Init(pCaArg->type.arrayType, SERIALIZATION_TYPE_UNDEFINED, 
             pCaArg->type.enumType, pCaArg->type.szEnumName, pCaArg->type.cEnumName);
-        if (pCaArg->arr.length != (ULONG)-1) for (ULONG i = 0; i < pCaArg->arr.length; i++)
+        for (ULONG i = 0; i < pCaArg->arr.length; i++)
             IfFailGo(Attribute::ParseCaValue(ca, &*pCaArg->arr.pSArray->Append(), &elementType, pCaValueArrayFactory, pDomainAssembly));
 
         break;
