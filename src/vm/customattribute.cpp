@@ -170,23 +170,23 @@ CustomAttributeManagedValues Attribute::GetManagedCaValue(CaValue* pCaVal)
                 gc.string = StringObject::NewString(pCaVal->type.szEnumName, pCaVal->type.cEnumName);  
 
             if (length != (ULONG)-1)
-                    {
-                    gc.array = (CaValueArrayREF)AllocateValueSzArray(MscorlibBinder::GetClass(CLASS__CUSTOM_ATTRIBUTE_ENCODED_ARGUMENT), length);
-                    CustomAttributeValue* pValues = gc.array->GetDirectPointerToNonObjectElements();
+            {
+                gc.array = (CaValueArrayREF)AllocateValueSzArray(MscorlibBinder::GetClass(CLASS__CUSTOM_ATTRIBUTE_ENCODED_ARGUMENT), length);
+                CustomAttributeValue* pValues = gc.array->GetDirectPointerToNonObjectElements();
 
+                for (COUNT_T i = 0; i < length; i ++)
+                    Attribute::SetBlittableCaValue(&pValues[i], &pCaVal->arr[i], &bAllBlittableCa); 
+
+                if (!bAllBlittableCa)
+                {
                     for (COUNT_T i = 0; i < length; i ++)
-                        Attribute::SetBlittableCaValue(&pValues[i], &pCaVal->arr[i], &bAllBlittableCa); 
-
-                    if (!bAllBlittableCa)
                     {
-                            for (COUNT_T i = 0; i < length; i ++)
-                            {
-                                CustomAttributeManagedValues managedCaValue = Attribute::GetManagedCaValue(&pCaVal->arr[i]);
-                                Attribute::SetManagedValue(
-                                    managedCaValue,
-                                    &gc.array->GetDirectPointerToNonObjectElements()[i]);
-                            }
+                        CustomAttributeManagedValues managedCaValue = Attribute::GetManagedCaValue(&pCaVal->arr[i]);
+                        Attribute::SetManagedValue(
+                            managedCaValue,
+                            &gc.array->GetDirectPointerToNonObjectElements()[i]);
                     }
+                }
             }
         }
     }
