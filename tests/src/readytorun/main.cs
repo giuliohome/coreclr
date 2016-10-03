@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
@@ -49,8 +50,50 @@ static class OpenClosedDelegateExtension
     }
 }
 
+
+public enum Test
+{
+    Foo,
+    Bar
+}
+
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+public class TestAttribute : Attribute
+{
+    public TestAttribute(Test[] valuesOne, Test[] valuesTwo, Test[] valuesThree, Test[] valuesFour, string[] valuesFive, string[] valuesSix)
+    {
+    }
+}
+
 class Program
 {
+    static void TestCtorAttr()
+    {
+        var type = typeof(Program);
+        var method = type.GetMethod("Main", BindingFlags.Static | BindingFlags.NonPublic);
+        var attributeEn = method.CustomAttributes.GetEnumerator();
+        attributeEn.MoveNext();
+        var argument = attributeEn.Current.ConstructorArguments;
+        Assert.AreEqual(argument.Count, 6);
+        Assert.AreEqual(argument[0].ArgumentType, typeof(Test[]));
+        Assert.AreEqual((Test)(((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[0].Value)[0].Value), Test.Foo);
+        Assert.AreEqual(argument[1].Value, null); 
+        // type Test[] also for null value!
+        Assert.AreEqual(argument[1].ArgumentType, typeof(Test[]));
+        Console.WriteLine("SOLUTION val {0} type {1}",argument[1].Value,argument[1].ArgumentType);
+        Assert.AreEqual(argument[2].ArgumentType, typeof(Test[]));
+        Assert.AreEqual(((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[2].Value).Count, 0);
+        Assert.AreEqual(argument[3].ArgumentType, typeof(Test[]));
+        Assert.AreEqual(((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[3].Value).Count, 3);
+        Assert.AreEqual((Test)(((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[3].Value)[2].Value), Test.Bar);
+        Console.WriteLine("SOLUTION yet another test val {0} type {1}",(Test)((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[3].Value)[2].Value,argument[3].ArgumentType);
+        Assert.AreEqual(argument[4].ArgumentType, typeof(string[]));
+        Assert.AreEqual((string)(((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[4].Value)[0].Value), "OK");
+        Console.WriteLine("REGRESSION test val {0} type {1}",(string)((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[4].Value)[0].Value,argument[4].ArgumentType);
+        Assert.AreEqual(argument[5].Value, null); 
+        Assert.AreEqual(argument[5].ArgumentType, typeof(string[]));
+    }
+
     static void TestVirtualMethodCalls()
     {
          var o = new MyClass();
@@ -420,6 +463,7 @@ class Program
 
     static void RunAllTests()
     {
+        TestCtorAttr();
         TestVirtualMethodCalls();
         TestMovedVirtualMethods();
 
@@ -472,6 +516,7 @@ class Program
         GenericLdtokenFieldsTest();
     }
 
+    [Test(new[] { Test.Foo }, null, new Test[0], new[] { Test.Foo, Test.Foo, Test.Bar }, new[] {"OK","KO"}, null)]
     static int Main()
     {
         // Code compiled by LLILC jit can't catch exceptions yet so the tests
