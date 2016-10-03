@@ -60,7 +60,7 @@ public enum Test
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public class TestAttribute : Attribute
 {
-    public TestAttribute(Test[] valuesOne, Test[] valuesTwo, Test[] valuesThree, Test[] valuesFour)
+    public TestAttribute(Test[] valuesOne, Test[] valuesTwo, Test[] valuesThree, Test[] valuesFour, string[] valuesFive, string[] valuesSix)
     {
     }
 }
@@ -74,7 +74,7 @@ class Program
         var attributeEn = method.CustomAttributes.GetEnumerator();
         attributeEn.MoveNext();
         var argument = attributeEn.Current.ConstructorArguments;
-        Assert.AreEqual(argument.Count, 4);
+        Assert.AreEqual(argument.Count, 6);
         Assert.AreEqual(argument[0].ArgumentType, typeof(Test[]));
         Assert.AreEqual((Test)(((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[0].Value)[0].Value), Test.Foo);
         Assert.AreEqual(argument[1].Value, null); 
@@ -87,6 +87,11 @@ class Program
         Assert.AreEqual(((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[3].Value).Count, 3);
         Assert.AreEqual((Test)(((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[3].Value)[2].Value), Test.Bar);
         Console.WriteLine("SOLUTION yet another test val {0} type {1}",(Test)((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[3].Value)[2].Value,argument[3].ArgumentType);
+        Assert.AreEqual(argument[4].ArgumentType, typeof(string[]));
+        Assert.AreEqual((string)(((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[4].Value)[0].Value), "OK");
+        Console.WriteLine("REGRESSION test val {0} type {1}",(string)((ReadOnlyCollection<CustomAttributeTypedArgument>)argument[4].Value)[0].Value,argument[4].ArgumentType);
+        Assert.AreEqual(argument[5].Value, null); 
+        Assert.AreEqual(argument[5].ArgumentType, typeof(string[]));
     }
 
     static void TestVirtualMethodCalls()
@@ -511,7 +516,7 @@ class Program
         GenericLdtokenFieldsTest();
     }
 
-    [Test(new[] { Test.Foo }, null, new Test[0], new[] { Test.Foo, Test.Foo, Test.Bar })]
+    [Test(new[] { Test.Foo }, null, new Test[0], new[] { Test.Foo, Test.Foo, Test.Bar }, new[] {"OK","KO"}, null)]
     static int Main()
     {
         // Code compiled by LLILC jit can't catch exceptions yet so the tests
